@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Lance Locker — Portfolio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Manufacturing & Mechanical Engineering portfolio with interactive 3D models." />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Lance Locker — Portfolio" />
+  <meta property="og:description" content="Manufacturing & Mechanical Engineering portfolio with interactive 3D models." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="assets/favicon.png" />
+
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@600;800&display=swap" rel="stylesheet"/>
+
+  <!-- model-viewer for 3D GLB -->
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+  <!-- stlite (Streamlit-in-browser) -->
+  <script src="https://cdn.jsdelivr.net/npm/@stlite/browser/dist/stlite.js"></script>
+
+  <style>
+    html,body { margin:0; height:100%; background:#070a12 }
+    #app { min-height: 100vh }
+
+    /* background scene */
+    .scene {
+      position:fixed; inset:-10% -10% auto -10%; height:60vh; z-index:-2;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(99,102,241,.22), transparent 50%),
+        radial-gradient(1000px 520px at 90% -15%, rgba(56,189,248,.18), transparent 55%);
+      filter: blur(24px); opacity:.85;
+    }
+    .grid-overlay{
+      position:fixed; inset:0; z-index:-1; opacity:.28;
+      background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 22px 22px;
+      mask-image: radial-gradient(ellipse at top, rgba(0,0,0,.4), transparent 65%);
+    }
+  </style>
+</head>
+<body>
+  <div class="scene"></div><div class="grid-overlay"></div>
+  <div id="app"></div>
+
+  <script>
+    // Fetch Python sources and data directly from the repo (same origin)
+    Promise.all([
+      fetch('app.py').then(r => r.text()),
+      fetch('lib/ui.py').then(r => r.text()),
+      fetch('lib/data.py').then(r => r.text()),
+      fetch('your_projects/locker.json').then(r => r.text()),
+    ]).then(([app, ui, data, locker]) => {
+      stlite.mount({
+        entrypoint: 'app.py',
+        files: {
+          'app.py': app,
+          'lib/ui.py': ui,
+          'lib/data.py': data,
+          'your_projects/locker.json': locker
+        },
+        // Add pure-Python requirements here if you need them, e.g. ["pydantic==2.9.0"]
+        requirements: []
+      }, document.getElementById('app'));
+    }).catch(err => {
+      document.getElementById('app').innerHTML =
+        '<pre style="color:#e6e8ec;padding:24px">Failed to load app files: ' + err + '</pre>';
+    });
+  </script>
+</body>
+</html>
